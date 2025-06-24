@@ -6,29 +6,26 @@ if [ -f "$CONFIG_FILE" ]; then
 else
   exit 1
 fi
-
-is_display_on() {
-  [ -n "$DISPLAY_VAR" ] && dumpsys power | grep "$DISPLAY_VAR" | grep -q "$DISPLAY_EXPECT"
-}
-
 start_ts=""
 
-getevent -t -l "$VOLUME_DEVICE" | while read -r line; do
-  if echo "$line" | grep -q "KEY_VOLUMEUP.*DOWN"; then
-    start_ts=$(date +%s%3N)
-  fi
-
-  if echo "$line" | grep -q "KEY_VOLUMEUP.*UP"; then
-    if [ -n "$start_ts" ]; then
-      end_ts=$(date +%s%3N)
-      delta=$((end_ts - start_ts))
-      if [ "$delta" -ge "$LONG_PRESS_MS" ]; then
-        if ! is_display_on; then
+getevent -t -l "$VOLUME_DEVICE" | awk -v long_press="$LONG_PRESS_MS" -v dvar="$DISPLAY_VAR" -v dexp="$DISPLAY_EXPECT" '
+/KEY_VOLUMEUP.*DOWN/ {
+    "date +%s%3N" | getline start_ts
+    close("date +%s%3N")
+  }
+  /KEY_VOLUMEUP.*UP/ {
+    if (start_ts != "") {
+      "date +%s%3N" | getline end_ts
+      close("date +%s%3N")
+      delta = end_ts - start_ts
+      if (delta >= long_press_ms) {
+        display_on = (system("dumpsys power | grep \"" dvar "\" | grep -q \"" dexp "\"") == 0)
+        if (!display_on) {
           input keyevent 25
           input keyevent 87
-        fi
-      fi
-    fi
-    start_ts=""
-  fi
-done &
+        }
+      }
+    }
+    start_ts = ""
+  }
+'
