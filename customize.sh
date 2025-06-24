@@ -1,7 +1,7 @@
 #!/system/bin/sh
 
 CONFIG_FILE="/data/adb/.config/volume_skip/ig.conf"
-mkdir /data/adb/.config/volume_skip
+mkdir /data/adb/.config/volume_skip >> "$CONFIG_FILE"
 echo "LONG_PRESS_MS=400"
 for dev in /dev/input/event*; do
   if getevent -il "$dev" 2>/dev/null | grep -q "KEY_VOLUMEUP"; then
