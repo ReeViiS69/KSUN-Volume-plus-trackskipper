@@ -18,7 +18,7 @@ getevent -t -l "$VOLUME_DEVICE" | awk -v long_press="$LONG_PRESS_MS" -v dvar="$D
       "date +%s%3N" | getline end_ts
       close("date +%s%3N")
       delta = end_ts - start_ts
-      if (delta >= long_press_ms) {
+      if (delta >= long_press) {
         display_on = (system("dumpsys power | grep \"" dvar "\" | grep -q \"" dexp "\"") == 0)
         if (!display_on) {
           system("input keyevent 25")
