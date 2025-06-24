@@ -1,5 +1,4 @@
 #!/system/bin/sh
-LONG_PRESS_MS=400
 CONFIG_FILE="/data/adb/.config/volume_skip/ig.conf"
 
 if [ -f "$CONFIG_FILE" ]; then
